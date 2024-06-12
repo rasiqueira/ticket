@@ -30,5 +30,5 @@ credentials_dict = {
 authenticator = stauth.Authenticate(
     credentials_dict,
     'ticket_system',  # Este é o nome da aplicação
-    'abcdef
+    'abcdef'
 )
