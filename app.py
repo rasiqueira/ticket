@@ -22,7 +22,15 @@ def load_tickets():
     if not os.path.exists('data/tickets.csv'):
         tickets = pd.DataFrame(columns=['Usuário', 'Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento'])
         tickets.to_csv('data/tickets.csv', index=False)
-    tickets = pd.read_csv('data/tickets.csv', parse_dates=['Data de Abertura', 'Data de Fechamento'])
+    else:
+        tickets = pd.read_csv('data/tickets.csv')
+        # Verificar se as colunas estão presentes, caso contrário, adicioná-las
+        if 'Data de Abertura' not in tickets.columns:
+            tickets['Data de Abertura'] = pd.NaT
+        if 'Data de Fechamento' not in tickets.columns:
+            tickets['Data de Fechamento'] = pd.NaT
+        tickets['Data de Abertura'] = pd.to_datetime(tickets['Data de Abertura'], errors='coerce')
+        tickets['Data de Fechamento'] = pd.to_datetime(tickets['Data de Fechamento'], errors='coerce')
     return tickets
 
 def save_tickets(tickets):
