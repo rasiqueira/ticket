@@ -68,11 +68,7 @@ if authentication_status:
         tickets = load_tickets()
         my_tickets = tickets[tickets['user'] == username]
         
-        # Filtro por status
-        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
-        if status_filter != 'Todos':
-            my_tickets = my_tickets[my_tickets['status'] == status_filter]
-        
+               
         # Adicionar flag de status
         my_tickets['Status Flag'] = my_tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
@@ -90,6 +86,10 @@ if authentication_status:
                     tickets.at[ticket_id, 'close_date'] = pd.NaT
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
+        # Filtro por status
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        if status_filter != 'Todos':
+            my_tickets = my_tickets[my_tickets['status'] == status_filter]
 
     elif role == "responder":
         st.title('Tickets para Responder')
