@@ -1,9 +1,12 @@
 import streamlit_authenticator as stauth
+import streamlit as st
 
-# Definição de usuários e suas roles
+# Acessar os segredos
+credentials = st.secrets["credentials"]
+
 users = [
-    {"name": "Suzi", "username": "suzi", "password": "Obvious@2024", "role": "creator"},
-    {"name": "Rodrigo", "username": "rodrigo", "password": "Obvious@2024", "role": "responder"}
+    {"name": credentials["user1_name"], "username": credentials["user1_username"], "password": credentials["user1_password"], "role": credentials["user1_role"]},
+    {"name": credentials["user2_name"], "username": credentials["user2_username"], "password": credentials["user2_password"], "role": credentials["user2_role"]}
 ]
 
 names = [user["name"] for user in users]
@@ -11,10 +14,11 @@ usernames = [user["username"] for user in users]
 passwords = [user["password"] for user in users]
 roles = {user["username"]: user["role"] for user in users}
 
+# Gerar senhas hash
 hashed_passwords = stauth.Hasher(passwords).generate()
 
 # Estrutura de credenciais esperada
-credentials = {
+credentials_dict = {
     "usernames": {
         user["username"]: {
             "name": user["name"],
@@ -24,7 +28,7 @@ credentials = {
 }
 
 authenticator = stauth.Authenticate(
-    credentials,
-    'ticket_system',
-    'abcdef'
+    credentials_dict,
+    'ticket_system',  # Este é o nome da aplicação
+    'abcdef
 )
