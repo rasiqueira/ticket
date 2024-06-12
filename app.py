@@ -15,7 +15,7 @@ if 'username' not in st.session_state:
 # Função para carregar e salvar tickets
 def load_tickets():
     if not os.path.exists('data/tickets.csv'):
-        tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response'])
+        tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent',  'response'])
         tickets.to_csv('data/tickets.csv', index=False)
     return pd.read_csv('data/tickets.csv')
 
