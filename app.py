@@ -23,7 +23,7 @@ def save_tickets(tickets):
     tickets.to_csv('data/tickets.csv', index=False)
 
 # Autenticação
-name, authentication_status, username = authenticator.login('Login', 'main')
+name, authentication_status, username = authenticator.login()
 
 if authentication_status:
     role = roles.get(username)
@@ -93,4 +93,3 @@ elif authentication_status == False:
 
 elif authentication_status == None:
     st.warning('Por favor, insira seu nome de usuário e senha')
-
