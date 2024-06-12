@@ -25,6 +25,8 @@ def load_tickets():
     else:
         tickets = pd.read_csv('data/tickets.csv')
         # Verificar se as colunas estão presentes, caso contrário, adicioná-las
+        if 'Status' not in tickets.columns:
+            tickets['Status'] = ''
         if 'Data de Abertura' not in tickets.columns:
             tickets['Data de Abertura'] = pd.NaT
         if 'Data de Fechamento' not in tickets.columns:
