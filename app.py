@@ -3,6 +3,7 @@ import pandas as pd
 import os
 from authenticator import authenticator, roles
 from teams_notifier import send_teams_notification
+from datetime import datetime
 
 # Inicializar o estado da sessão
 if 'authentication_status' not in st.session_state:
@@ -17,7 +18,7 @@ if 'logout' not in st.session_state:
 # Função para carregar e salvar tickets
 def load_tickets():
     if not os.path.exists('data/tickets.csv'):
-        tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response'])
+        tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date'])
         tickets.to_csv('data/tickets.csv', index=False)
     return pd.read_csv('data/tickets.csv')
 
@@ -41,7 +42,16 @@ if authentication_status:
                 submitted = st.form_submit_button('Enviar')
                 
                 if submitted:
-                    new_ticket = {'user': username, 'title': title, 'description': description, 'status': 'Aberto', 'respondent': '', 'response': ''}
+                    new_ticket = {
+                        'user': username,
+                        'title': title,
+                        'description': description,
+                        'status': 'Aberto',
+                        'respondent': '',
+                        'response': '',
+                        'open_date': datetime.now(),
+                        'close_date': None
+                    }
                     tickets = load_tickets()
                     tickets = tickets.append(new_ticket, ignore_index=True)
                     save_tickets(tickets)
@@ -54,7 +64,16 @@ if authentication_status:
         st.title('Meus Tickets')
         tickets = load_tickets()
         my_tickets = tickets[tickets['user'] == username]
-        st.dataframe(my_tickets)
+        
+        # Filtro por status
+        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        if status_filter != 'Todos':
+            my_tickets = my_tickets[my_tickets['status'] == status_filter]
+        
+        # Adicionar flag de status
+        my_tickets['Status Flag'] = my_tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        
+        st.dataframe(my_tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
 
         if st.sidebar.checkbox('Reabrir Ticket'):
             st.subheader('Reabrir Ticket')
@@ -65,18 +84,23 @@ if authentication_status:
                     tickets.at[ticket_id, 'status'] = 'Aberto'
                     tickets.at[ticket_id, 'respondent'] = ''
                     tickets.at[ticket_id, 'description'] = st.session_state['reopen_description']
+                    tickets.at[ticket_id, 'close_date'] = None
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
 
     elif role == "responder":
         st.title('Tickets para Responder')
         tickets = load_tickets()
-        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         
+        # Filtro por status
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
             tickets = tickets[tickets['status'] == status_filter]
         
-        st.dataframe(tickets)
+        # Adicionar flag de status
+        tickets['Status Flag'] = tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        
+        st.dataframe(tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
         
         if st.sidebar.checkbox('Responder Ticket'):
             st.subheader('Responder Ticket')
@@ -87,15 +111,12 @@ if authentication_status:
                     tickets.at[ticket_id, 'status'] = 'Respondido'
                     tickets.at[ticket_id, 'respondent'] = username
                     tickets.at[ticket_id, 'response'] = response_text
+                    tickets.at[ticket_id, 'close_date'] = datetime.now()
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} marcado como respondido.')
 
 elif authentication_status == False:
     st.error('Nome de usuário ou senha incorretos')
-
-elif authentication_status == None:
-    st.warning('Por favor, insira seu nome de usuário e senha')
-
 
 elif authentication_status == None:
     st.warning('Por favor, insira seu nome de usuário e senha')
