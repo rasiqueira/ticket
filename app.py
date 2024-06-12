@@ -20,9 +20,9 @@ def load_tickets():
     if not os.path.exists('data'):
         os.makedirs('data')
     if not os.path.exists('data/tickets.csv'):
-        tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date'])
+        tickets = pd.DataFrame(columns=['Usuário', 'Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento'])
         tickets.to_csv('data/tickets.csv', index=False)
-    tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
+    tickets = pd.read_csv('data/tickets.csv', parse_dates=['Data de Abertura', 'Data de Fechamento'])
     return tickets
 
 def save_tickets(tickets):
@@ -46,14 +46,14 @@ if authentication_status:
                 
                 if submitted:
                     new_ticket = pd.DataFrame([{
-                        'user': username,
-                        'title': title,
-                        'description': description,
-                        'status': 'Aberto',
-                        'respondent': '',
-                        'response': '',
-                        'open_date': datetime.now(),
-                        'close_date': pd.NaT
+                        'Usuário': username,
+                        'Título': title,
+                        'Descrição': description,
+                        'Status': 'Aberto',
+                        'Respondente': '',
+                        'Resposta': '',
+                        'Data de Abertura': datetime.now(),
+                        'Data de Fechamento': pd.NaT
                     }])
                     tickets = load_tickets()
                     tickets = pd.concat([tickets, new_ticket], ignore_index=True)
@@ -66,44 +66,46 @@ if authentication_status:
 
         st.title('Meus Tickets')
         tickets = load_tickets()
-        my_tickets = tickets[tickets['user'] == username]
+        my_tickets = tickets[tickets['Usuário'] == username]
         
-               
         # Adicionar flag de status
-        my_tickets['Status Flag'] = my_tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        my_tickets['Status Flag'] = my_tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(my_tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
+        st.dataframe(my_tickets[['Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento', 'Status Flag']])
 
         if st.sidebar.checkbox('Reabrir Ticket'):
             st.subheader('Reabrir Ticket')
             ticket_id = st.number_input('ID do Ticket para Reabrir', min_value=0, max_value=len(tickets) - 1)
             if ticket_id in tickets.index:
-                st.text_area('Descrição do Ticket', value=tickets.at[ticket_id, 'description'], key='reopen_description')
+                st.text_area('Descrição do Ticket', value=tickets.at[ticket_id, 'Descrição'], key='reopen_description')
                 if st.button('Reabrir Ticket'):
-                    tickets.at[ticket_id, 'status'] = 'Aberto'
-                    tickets.at[ticket_id, 'respondent'] = ''
-                    tickets.at[ticket_id, 'description'] = st.session_state['reopen_description']
-                    tickets.at[ticket_id, 'close_date'] = pd.NaT
+                    tickets.at[ticket_id, 'Status'] = 'Aberto'
+                    tickets.at[ticket_id, 'Respondente'] = ''
+                    tickets.at[ticket_id, 'Descrição'] = st.session_state['reopen_description']
+                    tickets.at[ticket_id, 'Data de Fechamento'] = pd.NaT
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
+        
         # Filtro por status
-        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
-            my_tickets = my_tickets[my_tickets['status'] == status_filter]
+            my_tickets = my_tickets[my_tickets['Status'] == status_filter]
+        
+        st.dataframe(my_tickets)
 
     elif role == "responder":
         st.title('Tickets para Responder')
         tickets = load_tickets()
         
         # Filtro por status
-        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
-            tickets = tickets[tickets['status'] == status_filter]
+            tickets = tickets[tickets['Status'] == status_filter]
         
         # Adicionar flag de status
-        tickets['Status Flag'] = tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        tickets['Status Flag'] = tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
+        st.dataframe(tickets[['Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento', 'Status Flag']])
         
         if st.sidebar.checkbox('Responder Ticket'):
             st.subheader('Responder Ticket')
@@ -111,10 +113,10 @@ if authentication_status:
             if ticket_id in tickets.index:
                 response_text = st.text_area('Resposta')
                 if st.button('Marcar como Respondido'):
-                    tickets.at[ticket_id, 'status'] = 'Respondido'
-                    tickets.at[ticket_id, 'respondent'] = username
-                    tickets.at[ticket_id, 'response'] = response_text
-                    tickets.at[ticket_id, 'close_date'] = datetime.now()
+                    tickets.at[ticket_id, 'Status'] = 'Respondido'
+                    tickets.at[ticket_id, 'Respondente'] = username
+                    tickets.at[ticket_id, 'Resposta'] = response_text
+                    tickets.at[ticket_id, 'Data de Fechamento'] = datetime.now()
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} marcado como respondido.')
 
