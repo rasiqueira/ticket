@@ -20,7 +20,8 @@ def load_tickets():
     if not os.path.exists('data/tickets.csv'):
         tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date'])
         tickets.to_csv('data/tickets.csv', index=False)
-    return pd.read_csv('data/tickets.csv')
+    tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
+    return tickets
 
 def save_tickets(tickets):
     tickets.to_csv('data/tickets.csv', index=False)
@@ -50,7 +51,7 @@ if authentication_status:
                         'respondent': '',
                         'response': '',
                         'open_date': datetime.now(),
-                        'close_date': None
+                        'close_date': pd.NaT
                     }
                     tickets = load_tickets()
                     tickets = tickets.append(new_ticket, ignore_index=True)
@@ -84,7 +85,7 @@ if authentication_status:
                     tickets.at[ticket_id, 'status'] = 'Aberto'
                     tickets.at[ticket_id, 'respondent'] = ''
                     tickets.at[ticket_id, 'description'] = st.session_state['reopen_description']
-                    tickets.at[ticket_id, 'close_date'] = None
+                    tickets.at[ticket_id, 'close_date'] = pd.NaT
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
 
