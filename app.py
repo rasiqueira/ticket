@@ -20,7 +20,8 @@ def load_tickets():
     if not os.path.exists('data/tickets.csv'):
         tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date'])
         tickets.to_csv('data/tickets.csv', index=False)
-    tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
+    else:
+        tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
     return tickets
 
 def save_tickets(tickets):
@@ -67,7 +68,7 @@ if authentication_status:
         my_tickets = tickets[tickets['user'] == username]
         
         # Filtro por status
-        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
             my_tickets = my_tickets[my_tickets['status'] == status_filter]
         
