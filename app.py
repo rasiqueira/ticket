@@ -45,7 +45,7 @@ if authentication_status:
                 submitted = st.form_submit_button('Enviar')
                 
                 if submitted:
-                    new_ticket = {
+                    new_ticket = pd.DataFrame([{
                         'user': username,
                         'title': title,
                         'description': description,
@@ -54,9 +54,9 @@ if authentication_status:
                         'response': '',
                         'open_date': datetime.now(),
                         'close_date': pd.NaT
-                    }
+                    }])
                     tickets = load_tickets()
-                    tickets = tickets.append(new_ticket, ignore_index=True)
+                    tickets = pd.concat([tickets, new_ticket], ignore_index=True)
                     save_tickets(tickets)
                     
                     # Notificação no Teams
