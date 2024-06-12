@@ -17,11 +17,12 @@ if 'logout' not in st.session_state:
 
 # Função para carregar e salvar tickets
 def load_tickets():
+    if not os.path.exists('data'):
+        os.makedirs('data')
     if not os.path.exists('data/tickets.csv'):
         tickets = pd.DataFrame(columns=['user', 'title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date'])
         tickets.to_csv('data/tickets.csv', index=False)
-    else:
-        tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
+    tickets = pd.read_csv('data/tickets.csv', parse_dates=['open_date', 'close_date'])
     return tickets
 
 def save_tickets(tickets):
