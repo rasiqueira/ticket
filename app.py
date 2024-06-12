@@ -26,6 +26,8 @@ def load_tickets():
     return tickets
 
 def save_tickets(tickets):
+    if not os.path.exists('data'):
+        os.makedirs('data')
     tickets.to_csv('data/tickets.csv', index=False)
 
 # Autenticação
@@ -60,7 +62,7 @@ if authentication_status:
                     save_tickets(tickets)
                     
                     # Notificação no Teams
-                    send_teams_notification(new_ticket)
+                    send_teams_notification(new_ticket.to_dict(orient='records')[0])
                     
                     st.success('Ticket criado com sucesso!')
 
@@ -85,7 +87,7 @@ if authentication_status:
                     tickets.at[ticket_id, 'Data de Fechamento'] = pd.NaT
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
-        
+
         # Filtro por status
         status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
