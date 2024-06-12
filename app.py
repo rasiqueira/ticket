@@ -22,22 +22,10 @@ def load_tickets():
     if not os.path.exists('data/tickets.csv'):
         tickets = pd.DataFrame(columns=['Usuário', 'Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento'])
         tickets.to_csv('data/tickets.csv', index=False)
-    else:
-        tickets = pd.read_csv('data/tickets.csv')
-        # Verificar se as colunas estão presentes, caso contrário, adicioná-las
-        if 'Status' not in tickets.columns:
-            tickets['Status'] = ''
-        if 'Data de Abertura' not in tickets.columns:
-            tickets['Data de Abertura'] = pd.NaT
-        if 'Data de Fechamento' not in tickets.columns:
-            tickets['Data de Fechamento'] = pd.NaT
-        tickets['Data de Abertura'] = pd.to_datetime(tickets['Data de Abertura'], errors='coerce')
-        tickets['Data de Fechamento'] = pd.to_datetime(tickets['Data de Fechamento'], errors='coerce')
+    tickets = pd.read_csv('data/tickets.csv', parse_dates=['Data de Abertura', 'Data de Fechamento'])
     return tickets
 
 def save_tickets(tickets):
-    if not os.path.exists('data'):
-        os.makedirs('data')
     tickets.to_csv('data/tickets.csv', index=False)
 
 # Autenticação
@@ -81,9 +69,9 @@ if authentication_status:
         my_tickets = tickets[tickets['Usuário'] == username]
         
         # Adicionar flag de status
-        my_tickets['Status Flag'] = my_tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        my_tickets['Flag de Status'] = my_tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(my_tickets[['Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento', 'Status Flag']])
+        st.dataframe(my_tickets)
 
         if st.sidebar.checkbox('Reabrir Ticket'):
             st.subheader('Reabrir Ticket')
@@ -99,7 +87,7 @@ if authentication_status:
                     st.success(f'Ticket {ticket_id} reaberto.')
 
         # Filtro por status
-        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
             my_tickets = my_tickets[my_tickets['Status'] == status_filter]
         
@@ -110,14 +98,14 @@ if authentication_status:
         tickets = load_tickets()
         
         # Filtro por status
-        status_filter = st.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
         if status_filter != 'Todos':
             tickets = tickets[tickets['Status'] == status_filter]
         
         # Adicionar flag de status
-        tickets['Status Flag'] = tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
+        tickets['Flag de Status'] = tickets['Status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(tickets[['Título', 'Descrição', 'Status', 'Respondente', 'Resposta', 'Data de Abertura', 'Data de Fechamento', 'Status Flag']])
+        st.dataframe(tickets)
         
         if st.sidebar.checkbox('Responder Ticket'):
             st.subheader('Responder Ticket')
