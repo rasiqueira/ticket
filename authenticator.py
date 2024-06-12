@@ -34,4 +34,3 @@ authenticator = stauth.Authenticate(
     'abcdef',  # Um segredo utilizado na geração dos cookies
     cookie_expiry_days=1
 )
-
