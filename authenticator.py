@@ -1,6 +1,5 @@
 import streamlit_authenticator as stauth
 import streamlit as st
-import bcrypt
 
 # Acessar os segredos
 credentials = st.secrets["credentials"]
@@ -15,8 +14,8 @@ usernames = [user["username"] for user in users]
 passwords = [user["password"] for user in users]
 roles = {user["username"]: user["role"] for user in users}
 
-# Gerar senhas hash usando bcrypt
-hashed_passwords = [bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode() for password in passwords]
+# Gerar senhas hash
+hashed_passwords = stauth.Hasher(passwords).generate()
 
 # Estrutura de credenciais esperada
 credentials_dict = {
