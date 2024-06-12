@@ -28,12 +28,22 @@ def load_tickets():
 def save_tickets(tickets):
     tickets.to_csv('data/tickets.csv', index=False)
 
+# Função de logout
+def logout():
+    st.session_state['authentication_status'] = None
+    st.session_state['name'] = ''
+    st.session_state['username'] = ''
+    st.session_state['logout'] = True
+
 # Autenticação
 name, authentication_status, username = authenticator.login()
 
 if authentication_status:
     role = roles.get(username)
     st.sidebar.title(f'Bem-vindo, {name} ({role})')
+
+    if st.sidebar.button('Logout'):
+        logout()
 
     if role == "creator":
         if st.sidebar.checkbox('Criar Ticket'):
@@ -60,7 +70,7 @@ if authentication_status:
                     save_tickets(tickets)
                     
                     # Notificação no Teams
-                    send_teams_notification(new_ticket)
+                    send_teams_notification(new_ticket.to_dict(orient='records')[0])
                     
                     st.success('Ticket criado com sucesso!')
 
@@ -68,11 +78,15 @@ if authentication_status:
         tickets = load_tickets()
         my_tickets = tickets[tickets['user'] == username]
         
-               
+        # Filtro por status
+        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
+        if status_filter != 'Todos':
+            my_tickets = my_tickets[my_tickets['status'] == status_filter]
+
         # Adicionar flag de status
         my_tickets['Status Flag'] = my_tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(my_tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
+        st.dataframe(my_tickets)
 
         if st.sidebar.checkbox('Reabrir Ticket'):
             st.subheader('Reabrir Ticket')
@@ -86,10 +100,6 @@ if authentication_status:
                     tickets.at[ticket_id, 'close_date'] = pd.NaT
                     save_tickets(tickets)
                     st.success(f'Ticket {ticket_id} reaberto.')
-        # Filtro por status
-        status_filter = st.sidebar.selectbox('Filtrar por Status', ['Todos', 'Aberto', 'Respondido'])
-        if status_filter != 'Todos':
-            my_tickets = my_tickets[my_tickets['status'] == status_filter]
 
     elif role == "responder":
         st.title('Tickets para Responder')
@@ -103,7 +113,7 @@ if authentication_status:
         # Adicionar flag de status
         tickets['Status Flag'] = tickets['status'].apply(lambda x: '🟢' if x == 'Respondido' else '🔴')
         
-        st.dataframe(tickets[['title', 'description', 'status', 'respondent', 'response', 'open_date', 'close_date', 'Status Flag']])
+        st.dataframe(tickets)
         
         if st.sidebar.checkbox('Responder Ticket'):
             st.subheader('Responder Ticket')
